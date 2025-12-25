@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potok-inátor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        nature: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        water: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                        }
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom tooltip styles for steps */
+        .tooltip-trigger:hover + .tooltip-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-nature-800 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-nature-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <h1 class="text-2xl font-bold tracking-tight">Potok-inátor</h1>
+            </div>
+            <div class="text-xs sm:text-sm text-nature-100 opacity-80 font-mono">
+                v1.2
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-4xl mx-auto px-4 py-6 w-full space-y-6">
+
+        <!-- Disclaimer -->
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-bold text-red-800 uppercase tracking-wide">Nebezpečí!</h3>
+                    <div class="mt-1 text-sm text-red-700">
+                        <p>Tato aplikace je určena pouze pro předběžný, hrubý odhad a neměla by být používána pro žádný skutečný stavební projekt. Aplikace neposkytuje žádné informace týkající se technické ani právní proveditelnosti vašeho projektu. Vývojáři aplikace nepřebírají žádnou odpovědnost za jakékoli výpočty ani prohlášení učiněná na základě této aplikace.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info & Credits -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 text-slate-600 leading-relaxed">
+            <p class="mb-4">
+                S Potok-inátorem můžete odhadnout potenciál vašeho proudu pro výrobu elektrické energie v několika krocích a s použitím jen malého počtu nástrojů.
+                <br /><br />
+                <span class="font-bold text-nature-700">Pusťte se do toho!</span>
+            </p>
+            <div class="text-xs text-slate-400 border-t border-slate-100 pt-4">
+                Výpočty a metodologie Julia Tanzer, vytvoření aplikace Jan Odstrčilík pomocí AI
+            </div>
+        </div>
+
+        <!-- Section 1: Výška (Elevation) -->
+        <section class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden relative">
+            <div class="bg-nature-50 px-6 py-4 border-b border-nature-100 flex justify-between items-center">
+                <h2 class="text-lg font-semibold text-nature-900 flex items-center gap-2">
+                    <span class="bg-nature-200 text-nature-800 px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide">Krok 1</span>
+                    Odhad výšky pádu
+                </h2>
+                <div class="relative group">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-nature-400 cursor-help tooltip-trigger" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div class="tooltip-content absolute right-0 w-64 p-3 mt-2 bg-slate-800 text-white text-xs rounded shadow-xl opacity-0 invisible transition-all z-10">
+                        Pomocí aplikace Mapy Google určete nadmořskou výšku na hranici vašeho pozemku směrem k hornímu toku potoka. Změřte nadmořskou výšku na hladině vody uprostřed potoka. Chcete-li to provést, aktivujte nastavení terénu „Terén“ pod ikonou diamantu .
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualization: Elevation -->
+            <div class="bg-nature-50/50 border-b border-nature-100 p-4 flex justify-center items-center overflow-hidden relative">
+                <svg id="viz-elevation" class="w-full max-w-sm h-32" viewBox="0 0 300 120">
+                    <defs>
+                        <linearGradient id="groundGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#166534" />
+                            <stop offset="100%" stop-color="#14532d" />
+                        </linearGradient>
+                        <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#60a5fa" />
+                            <stop offset="100%" stop-color="#3b82f6" />
+                        </linearGradient>
+                    </defs>
+                    <!-- Ground -->
+                    <path id="viz-el-ground" d="M0,40 L120,40 L180,90 L300,90 L300,120 L0,120 Z" fill="url(#groundGrad)" />
+                    <!-- Water Flow -->
+                    <path id="viz-el-water" d="M0,35 L125,35 L185,85 L300,85 L300,90 L180,90 L120,40 L0,40 Z" fill="url(#waterGrad)" opacity="0.8" />
+                    
+                    <!-- Labels -->
+                    <text x="60" y="30" text-anchor="middle" class="text-xs font-bold fill-nature-900">P1</text>
+                    <text x="240" y="110" text-anchor="middle" class="text-xs font-bold fill-nature-900">P2</text>
+                    
+                    <!-- Measurement Line -->
+                    <line x1="150" y1="40" x2="150" y2="90" stroke="#ef4444" stroke-width="2" stroke-dasharray="3" id="viz-el-line"/>
+                    <text x="155" y="70" class="text-xs font-bold fill-red-600" id="viz-el-text">h = ?</text>
+                </svg>
+            </div>
+
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="p1" class="block text-sm font-medium text-slate-600 mb-1">Nadmořská výška na vstupu potoka na pozemek (P1)</label>
+                    <div class="relative rounded-md shadow-sm">
+                        <input type="number" step="any" name="p1" id="p1" class="form-input block w-full pl-3 pr-10 py-2 border-gray-300 rounded-md focus:ring-nature-500 focus:border-nature-500 sm:text-sm bg-slate-50" placeholder="např. 450">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm">m</span>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label for="p2" class="block text-sm font-medium text-slate-600 mb-1">Nadmořská výška potoka uprostřed pozemku (P2)</label>
+                    <div class="relative rounded-md shadow-sm">
+                        <input type="number" step="any" name="p2" id="p2" class="form-input block w-full pl-3 pr-10 py-2 border-gray-300 rounded-md focus:ring-nature-500 focus:border-nature-500 sm:text-sm bg-slate-50" placeholder="např. 445">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm">m</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 pb-4">
+                <div class="text-sm text-slate-500 flex justify-between bg-slate-50 p-2 rounded">
+                    <span>Vypočítaný spád (h):</span>
+                    <span class="font-bold text-nature-700" id="result-h">0.00 m</span>
+                </div>
+            </div>
+            <!-- Validation Badge -->
+            <div id="check-step-1" class="absolute top-4 right-14 text-nature-500 opacity-0 transition-opacity">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+        </section>
+
+        <!-- Section 2: Průřez (Cross-section) -->
+        <section class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden relative">
+            <div class="bg-water-50 px-6 py-4 border-b border-water-100 flex justify-between items-center">
+                <h2 class="text-lg font-semibold text-water-900 flex items-center gap-2">
+                    <span class="bg-water-200 text-water-800 px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide">Krok 2</span>
+                    Odhad průřezu
+                </h2>
+                <div class="relative group">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-water-400 cursor-help tooltip-trigger" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div class="tooltip-content absolute right-0 w-80 sm:w-96 p-4 mt-2 bg-slate-800 text-white text-xs rounded shadow-xl opacity-0 invisible transition-all z-10 leading-relaxed">
+                        <p class="mb-2">Cirkusová metoda předpokládá přibližně lichoběžníkový průřez. Pokud se to pro vámi zvolený tok nevztahuje, vyberte vhodnou metodu pro výpočet průřezu.</p>
+                        <p class="mb-2 font-semibold text-water-200">Budete potřebovat: 1 most, 1 vodotěsný krejčovský metr, 2 tyče, případně gumové holínky.</p>
+                        <div class="space-y-2">
+                            <div><span class="font-bold text-water-200">Krok 1:</span> Pomocí pravítka změřte šířku potoka u hladiny na straně mostu směřující k hornímu toku potoka. (C1)</div>
+                            <div><span class="font-bold text-water-200">Krok 2:</span> Dvěma tyčkami označte šířku potoka u koryta na straně mostu směřující k hornímu toku potoka.</div>
+                            <div><span class="font-bold text-water-200">Krok 3:</span> Pomocí pravítka změřte vzdálenost mezi dvěma tyčemi. (A1)</div>
+                            <div><span class="font-bold text-water-200">Krok 4:</span> Pomocí krejčovského metru změřte hloubku vody v několika bodech na straně mostu směřující k protiproudému toku. Počet měřicích bodů závisí na šířce toku a měl by být 1–2 na metr. Vypočítejte průměr. (H1)</div>
+                            <div><span class="font-bold text-water-200">Krok 5:</span> Opakujte kroky 1–4 pro stranu mostu směřující k dolnímu toku potoka. (C2, A2, H2)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <!-- Visualization: Trapezoids -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="flex flex-col items-center">
+                        <span class="text-xs font-semibold text-slate-500 mb-2">Profil 1 (Začátek)</span>
+                        <svg id="viz-profile1" class="w-full h-32 bg-slate-50/50 rounded border border-slate-200" viewBox="0 0 200 120" preserveAspectRatio="xMidYMid meet">
+                            <!-- Helper grid lines -->
+                            <line x1="0" y1="20" x2="200" y2="20" stroke="#bae6fd" stroke-dasharray="2" />
+                            <text x="5" y="15" class="text-[10px] fill-slate-400">Hladina</text>
+                            <polygon id="poly1" points="60,100 140,100 130,20 70,20" fill="#3b82f6" opacity="0.6" stroke="#2563eb" stroke-width="2" />
+                            <text x="100" y="60" text-anchor="middle" class="text-xs fill-white font-bold opacity-0" id="label-poly1">S1</text>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <span class="text-xs font-semibold text-slate-500 mb-2">Profil 2 (Konec)</span>
+                        <svg id="viz-profile2" class="w-full h-32 bg-slate-50/50 rounded border border-slate-200" viewBox="0 0 200 120" preserveAspectRatio="xMidYMid meet">
+                            <line x1="0" y1="20" x2="200" y2="20" stroke="#bae6fd" stroke-dasharray="2" />
+                            <text x="5" y="15" class="text-[10px] fill-slate-400">Hladina</text>
+                            <polygon id="poly2" points="60,100 140,100 130,20 70,20" fill="#3b82f6" opacity="0.6" stroke="#2563eb" stroke-width="2" />
+                            <text x="100" y="60" text-anchor="middle" class="text-xs fill-white font-bold opacity-0" id="label-poly2">S2</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Upper Stream -->
+                    <div class="space-y-4">
+                        <h4 class="font-semibold text-slate-700 border-b pb-2">Horní profil (Začátek)</h4>
+                        <div>
+                            <label class="text-xs font-medium text-slate-500">Šířka hladiny (C1)</label>
+                            <input type="number" min="0" step="any" id="c1" class="form-input block w-full mt-1 border-gray-300 rounded-md text-sm bg-slate-50" placeholder="m">
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-slate-500">Šířka dna (A1)</label>
+                            <input type="number" min="0" step="any" id="a1" class="form-input block w-full mt-1 border-gray-300 rounded-md text-sm bg-slate-50" placeholder="m">
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-slate-500">Hloubka (H1)</label>
+                            <input type="number" min="0" step="any" id="h1" class="form-input block w-full mt-1 border-gray-300 rounded-md text-sm bg-slate-50" placeholder="m">
+                        </div>
+                    </div>
+
+                    <!-- Lower Stream -->
+                    <div class="space-y-4">
+                        <h4 class="font-semibold text-slate-700 border-b pb-2">Dolní profil (Konec)</h4>
+                        <div>
+                            <label class="text-xs font-medium text-slate-500">Šířka hladiny (C2)</label>
+                            <input type="number" min="0" step="any" id="c2" class="form-input block w-full mt-1 border-gray-300 rounded-md text-sm bg-slate-50" placeholder="m">
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-slate-500">Šířka dna (A2)</label>
+                            <input type="number" min="0" step="any" id="a2" class="form-input block w-full mt-1 border-gray-300 rounded-md text-sm bg-slate-50" placeholder="m">
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-slate-500">Hloubka (H2)</label>
+                            <input type="number" min="0" step="any" id="h2" class="form-input block w-full mt-1 border-gray-300 rounded-md text-sm bg-slate-50" placeholder="m">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 pb-4">
+                 <div class="text-sm text-slate-500 flex justify-between bg-slate-50 p-2 rounded">
+                    <span>Průměrný průřez (S):</span>
+                    <span class="font-bold text-water-700" id="result-area">0.00 m²</span>
+                </div>
+            </div>
+            <!-- Validation Badge -->
+            <div id="check-step-2" class="absolute top-4 right-14 text-water-500 opacity-0 transition-opacity">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+        </section>
+
+        <!-- Section 3: Rychlost (Velocity) -->
+        <section class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden relative">
+            <div class="bg-amber-50 px-6 py-4 border-b border-amber-100 flex justify-between items-center">
+                <h2 class="text-lg font-semibold text-amber-900 flex items-center gap-2">
+                    <span class="bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide">Krok 3</span>
+                    Odhad rychlosti
+                </h2>
+                <div class="relative group">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-400 cursor-help tooltip-trigger" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div class="tooltip-content absolute right-0 w-80 sm:w-96 p-4 mt-2 bg-slate-800 text-white text-xs rounded shadow-xl opacity-0 invisible transition-all z-10 leading-relaxed">
+                        <p class="mb-2 font-semibold text-amber-200">Budete potřebovat: list nebo klacek dle vlastního výběru, můstek, stopky, pravítko</p>
+                        <div class="space-y-2">
+                            <div><span class="font-bold text-amber-200">Krok 1:</span> Pomocí pravítka změřte šířku mostu ve směru proudění. (B)</div>
+                            <div><span class="font-bold text-amber-200">Krok 2:</span> Hoďte list nebo klacek do vody na straně mostu směřující k hornímu toku potoka a změřte čas, než se list/klacek objeví na druhé straně mostu. (t)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Visualization: Velocity -->
+            <div class="bg-amber-50/50 border-b border-amber-100 p-4 h-40 overflow-hidden relative flex justify-center">
+                <svg id="viz-velocity" class="w-full max-w-lg h-full" viewBox="0 0 400 150">
+                    <defs>
+                        <pattern id="riverPattern" patternUnits="userSpaceOnUse" width="40" height="40">
+                            <path d="M0 20 Q10 10 20 20 T40 20" fill="none" stroke="white" stroke-opacity="0.3" stroke-width="2"/>
+                        </pattern>
+                    </defs>
+                    <!-- Grass Banks -->
+                    <rect x="0" y="0" width="400" height="150" fill="#ecfccb" />
+                    <!-- River -->
+                    <rect x="0" y="30" width="400" height="90" fill="#3b82f6" />
+                    <rect x="0" y="30" width="400" height="90" fill="url(#riverPattern)" />
+                    
+                    <!-- Bridge -->
+                    <rect id="viz-bridge-rect" x="180" y="20" width="40" height="110" fill="#d1d5db" stroke="#9ca3af" stroke-width="2" rx="2" />
+                    
+                    <!-- Stick (Medvídek Pú) -->
+                    <circle id="viz-pooh" cx="0" cy="75" r="8" fill="#d97706" stroke="#fff" stroke-width="2" opacity="0"/>
+                    
+                    <!-- Measurement Indicator -->
+                    <line x1="180" y1="15" x2="220" y2="15" stroke="#6b7280" stroke-width="1" id="viz-bridge-dim-line" />
+                    <text x="200" y="10" text-anchor="middle" class="text-[10px] fill-slate-600 font-mono" id="viz-bridge-text">B</text>
+                </svg>
+            </div>
+
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="bridge-width" class="block text-sm font-medium text-slate-600 mb-1">Šířka mostu (B)</label>
+                    <div class="relative rounded-md shadow-sm">
+                        <input type="number" min="0" step="any" name="bridge-width" id="bridge-width" class="form-input block w-full pl-3 pr-10 py-2 border-gray-300 rounded-md focus:ring-amber-500 focus:border-amber-500 sm:text-sm bg-slate-50" placeholder="např. 300">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm">cm</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">Zadávejte v centimetrech</p>
+                </div>
+                <div>
+                    <label for="time" class="block text-sm font-medium text-slate-600 mb-1">Čas průplavu (t)</label>
+                    <div class="relative rounded-md shadow-sm">
+                        <input type="number" min="0" step="any" name="time" id="time" class="form-input block w-full pl-3 pr-10 py-2 border-gray-300 rounded-md focus:ring-amber-500 focus:border-amber-500 sm:text-sm bg-slate-50" placeholder="např. 2.5">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm">s</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 pb-4">
+                <div class="text-sm text-slate-500 flex justify-between bg-slate-50 p-2 rounded">
+                   <span>Rychlost toku (v):</span>
+                   <span class="font-bold text-amber-700" id="result-velocity">0.00 m/s</span>
+               </div>
+           </div>
+           <!-- Validation Badge -->
+           <div id="check-step-3" class="absolute top-4 right-14 text-amber-500 opacity-0 transition-opacity">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+        </section>
+
+        <!-- Section 4: Účinnost (Efficiency) -->
+        <section class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden relative">
+            <div class="bg-indigo-50 px-6 py-4 border-b border-indigo-100 flex justify-between items-center">
+                <h2 class="text-lg font-semibold text-indigo-900 flex items-center gap-2">
+                    <span class="bg-indigo-200 text-indigo-800 px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide">Krok 4</span>
+                    Účinnost – Archimédova metoda
+                </h2>
+                <!-- No tooltip needed as the text is in the body, or maybe a generic info icon -->
+            </div>
+            
+            <div class="flex flex-col md:flex-row">
+                <!-- Visual -->
+                <div class="bg-indigo-50/50 border-b md:border-b-0 md:border-r border-indigo-100 p-6 flex justify-center items-center md:w-1/3 min-h-[200px]">
+                    <svg id="viz-turbine" class="w-full h-full max-h-48" viewBox="0 0 300 180" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Group rotated for the incline -->
+                        <g transform="translate(150, 90) rotate(-25) translate(-150, -90)">
+                            
+                            <!-- Main Cylinder Body (Transparent/Outline) -->
+                            <rect x="80" y="60" width="140" height="60" rx="8" fill="#f8fafc" stroke="#475569" stroke-width="2.5" />
+                            
+                            <!-- Central Shaft -->
+                            <line x1="60" y1="90" x2="240" y2="90" stroke="#334155" stroke-width="4" stroke-linecap="round" />
+                            
+                            <!-- Screw Blades (Front visible part) -->
+                            <path d="M94 60 C 104 60, 104 120, 94 120" fill="none" stroke="#64748b" stroke-width="2" />
+                            <path d="M122 60 C 132 60, 132 120, 122 120" fill="none" stroke="#64748b" stroke-width="2" />
+                            <path d="M150 60 C 160 60, 160 120, 150 120" fill="none" stroke="#64748b" stroke-width="2" />
+                            <path d="M178 60 C 188 60, 188 120, 178 120" fill="none" stroke="#64748b" stroke-width="2" />
+                            <path d="M206 60 C 216 60, 216 120, 206 120" fill="none" stroke="#64748b" stroke-width="2" />
+
+                            <!-- Screw Blades (Back part - distinct style for depth) -->
+                            <path d="M94 60 C 84 60, 84 120, 94 120" fill="none" stroke="#cbd5e1" stroke-width="1.5" />
+                            <path d="M122 60 C 112 60, 112 120, 122 120" fill="none" stroke="#cbd5e1" stroke-width="1.5" />
+                            <path d="M150 60 C 140 60, 140 120, 150 120" fill="none" stroke="#cbd5e1" stroke-width="1.5" />
+                            <path d="M178 60 C 168 60, 168 120, 178 120" fill="none" stroke="#cbd5e1" stroke-width="1.5" />
+                            <path d="M206 60 C 196 60, 196 120, 206 120" fill="none" stroke="#cbd5e1" stroke-width="1.5" />
+                        </g>
+
+                        <!-- Water flow particles/dashes -->
+                        <!-- Inlet -->
+                        <path d="M40 70 Q 60 75, 80 65" fill="none" stroke="#60a5fa" stroke-width="2" stroke-dasharray="4,4" opacity="0.8" stroke-linecap="round"/>
+                        
+                        <!-- Outlet -->
+                        <path d="M220 130 Q 240 135, 260 125" fill="none" stroke="#60a5fa" stroke-width="2" stroke-dasharray="4,4" opacity="0.8" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                
+                <!-- Text Content -->
+                <div class="p-6 md:w-2/3 text-sm text-slate-600 leading-relaxed space-y-4">
+                    <p>
+                        Pro malé vodní elektrárny doporučujeme použití <span class="font-bold text-indigo-700">šroubové turbíny</span>. 
+                        Výhody šroubových turbín spočívají v jejich nízké citlivosti na kolísání průtoku vody (od 0,1 m³/s), 
+                        jejich toleranci vůči nečistotám a relativně nízkém riziku pro ryby a další vodní organismy protékající po proudu.
+                    </p>
+                    <p>
+                        Na rozdíl od průtokových elektráren vybavených turbínami lze šroubové turbíny ekonomicky provozovat v lokalitách s nižším spádem.
+                    </p>
+                    <div class="bg-indigo-50 border border-indigo-100 rounded p-3 flex items-start gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p class="text-indigo-800 font-medium">
+                            Celková účinnost šroubové turbíny je přibližně <span class="font-bold text-lg">69 %</span>.
+                            <span class="block text-xs font-normal text-indigo-600 mt-1 opacity-80">(Lashofer 2011, na základě 14 stávajících elektráren v Německu, Rakousku a Jižním Tyrolsku)</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+             <div class="absolute top-4 right-6 text-indigo-500 opacity-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+        </section>
+
+        <!-- Section 5: Vysvětlení výpočtu (Explanation) -->
+        <section class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden relative">
+            <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                <h2 class="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                    Vysvětlení výpočtu
+                </h2>
+            </div>
+            
+            <div class="p-6">
+                <!-- Wrapper -->
+                <div class="flex flex-wrap items-center gap-2 justify-center lg:justify-start text-sm sm:text-base font-mono">
+
+                    <!-- Krok 1 -->
+                    <div class="flex flex-col items-center relative group">
+                        <div class="mb-1 text-[10px] font-bold text-nature-600 uppercase tracking-wider">Krok 1</div>
+                        <div class="bg-nature-50 border border-nature-200 p-2 rounded flex flex-col items-center min-w-[90px] cursor-help transition-colors hover:bg-nature-100">
+                            <span class="text-[10px] font-bold text-nature-400 uppercase tracking-tight mb-0.5">(P1 - P2)</span>
+                            <span class="font-bold text-nature-700" id="eq-part-h">0.00</span>
+                             <!-- Tooltip -->
+                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max max-w-xs px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20 pointer-events-none shadow-lg text-center">
+                                <div class="font-bold mb-1 text-slate-200">Odhad výšky pádu</div>
+                                <div class="font-mono text-nature-300">P1 - P2</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <span class="text-slate-300 font-bold">×</span>
+
+                    <!-- Krok 2 -->
+                    <div class="flex flex-col items-center relative group">
+                        <div class="mb-1 text-[10px] font-bold text-water-600 uppercase tracking-wider">Krok 2</div>
+                        <div class="bg-water-50 border border-water-200 p-2 rounded flex flex-col items-center min-w-[110px] cursor-help transition-colors hover:bg-water-100">
+                            <span class="text-[10px] font-bold text-water-400 uppercase tracking-tight mb-0.5">0,25 · S</span>
+                            <span class="font-bold text-water-700" id="eq-part-s">0.00</span>
+                             <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max max-w-xs px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20 pointer-events-none shadow-lg text-center">
+                                <div class="font-bold mb-1 text-slate-200">Odhad průřezu</div>
+                                <div class="font-mono text-water-300">0,25 · ((A1+C1)·H1 + (A2+C2)·H2)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <span class="text-slate-300 font-bold">×</span>
+
+                    <!-- Krok 3 -->
+                    <div class="flex flex-col items-center relative group">
+                        <div class="mb-1 text-[10px] font-bold text-amber-600 uppercase tracking-wider">Krok 3</div>
+                        <div class="bg-amber-50 border border-amber-200 p-2 rounded flex flex-col items-center min-w-[100px] cursor-help transition-colors hover:bg-amber-100">
+                            <span class="text-[10px] font-bold text-amber-400 uppercase tracking-tight mb-0.5">((B/100)/t)</span>
+                            <span class="font-bold text-amber-700" id="eq-part-v">0.00</span>
+                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max max-w-xs px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20 pointer-events-none shadow-lg text-center">
+                                <div class="font-bold mb-1 text-slate-200">Odhad rychlosti</div>
+                                <div class="font-mono text-amber-300">(B/100) / t</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <span class="text-slate-300 font-bold">×</span>
+
+                    <!-- Krok 4 (Efficiency) -->
+                    <div class="flex flex-col items-center relative group">
+                        <div class="mb-1 text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Krok 4</div>
+                        <div class="bg-indigo-50 border border-indigo-200 p-2 rounded flex flex-col items-center min-w-[70px] cursor-help transition-colors hover:bg-indigo-100">
+                            <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-tight mb-0.5">Účinnost</span>
+                            <span class="font-bold text-indigo-700">0,69</span>
+                             <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max max-w-xs px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20 pointer-events-none shadow-lg text-center">
+                                <div class="font-bold mb-1 text-slate-200">Účinnost turbíny</div>
+                                <div class="font-mono text-indigo-300">0,69</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <span class="text-slate-300 font-bold">×</span>
+
+                    <!-- Constants (Density) -->
+                    <div class="flex flex-col items-center relative group">
+                        <div class="mb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Konst.</div>
+                        <div class="bg-slate-100 border border-slate-200 p-2 rounded flex flex-col items-center min-w-[60px] cursor-help transition-colors hover:bg-slate-200">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight mb-0.5">ρ</span>
+                            <span class="font-bold text-slate-600">1000</span>
+                             <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max max-w-xs px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20 pointer-events-none shadow-lg text-center">
+                                <div class="font-bold mb-1 text-slate-200">Hustota vody</div>
+                                <div class="font-mono text-slate-300">1000 kg/m³</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <span class="text-slate-300 font-bold">×</span>
+
+                    <!-- Constants (Gravity) -->
+                    <div class="flex flex-col items-center relative group">
+                        <div class="mb-1 text-[10px] font-bold text-transparent uppercase tracking-wider select-none">.</div>
+                        <div class="bg-slate-100 border border-slate-200 p-2 rounded flex flex-col items-center min-w-[60px] cursor-help transition-colors hover:bg-slate-200">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight mb-0.5">g</span>
+                            <span class="font-bold text-slate-600">9,81</span>
+                             <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max max-w-xs px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20 pointer-events-none shadow-lg text-center">
+                                <div class="font-bold mb-1 text-slate-200">Tíhové zrychlení</div>
+                                <div class="font-mono text-slate-300">9,81 m/s²</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <span class="text-slate-300 font-bold">/</span>
+
+                    <!-- Divisor -->
+                    <div class="flex flex-col items-center relative">
+                        <div class="mb-1 text-[10px] font-bold text-slate-300 uppercase tracking-wider">kW</div>
+                        <div class="p-2 font-bold text-slate-400">1000</div>
+                    </div>
+
+                    <span class="text-slate-300 font-bold">=</span>
+
+                    <!-- Result -->
+                    <div class="flex flex-col items-center">
+                        <div class="mb-1 text-[10px] font-bold text-slate-800 uppercase tracking-wider">P (kW)</div>
+                        <div class="bg-white border border-slate-300 p-2 rounded flex flex-col items-center min-w-[90px] shadow-sm">
+                             <span class="text-[10px] font-bold text-transparent mb-0.5 select-none">.</span>
+                            <span class="font-bold text-slate-900" id="eq-result">0.00</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Explanation Legend -->
+                <div class="mt-6 pt-4 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-500">
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-slate-700">1000</span>
+                        <span>= Hustota vody (kg/m³)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-slate-700">9,81</span>
+                        <span>= Tíhové zrychlení (m/s²)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Result -->
+    <footer id="main-footer" class="sticky bottom-0 bg-slate-100 border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] py-4 px-4 z-40 transition-colors duration-500">
+        
+        <!-- State: Missing Data -->
+        <div id="footer-missing" class="max-w-4xl mx-auto flex items-center justify-between text-slate-500">
+            <div class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="text-sm font-medium">Pro výpočet výkonu je nutné vyplnit všechny údaje.</span>
+            </div>
+            <div class="flex gap-2 text-xs font-bold uppercase tracking-wider">
+                <span id="missing-badge-1" class="px-2 py-1 bg-slate-200 rounded text-slate-400">Krok 1</span>
+                <span id="missing-badge-2" class="px-2 py-1 bg-slate-200 rounded text-slate-400">Krok 2</span>
+                <span id="missing-badge-3" class="px-2 py-1 bg-slate-200 rounded text-slate-400">Krok 3</span>
+            </div>
+        </div>
+
+        <!-- State: Complete -->
+        <div id="footer-complete" class="max-w-4xl mx-auto hidden animate-fade-in">
+            <!-- Just the Result Row -->
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="text-sm text-slate-600 hidden sm:block">
+                    <!-- Helper text or empty space to balance layout -->
+                    <span class="text-slate-400 text-xs">Výpočet kompletní</span>
+                </div>
+                <div class="text-center sm:text-right w-full sm:w-auto">
+                    <div class="text-xs font-bold text-slate-500 uppercase tracking-widest">Odhadovaný výkon</div>
+                    <div class="text-4xl font-extrabold text-nature-700 flex items-baseline gap-1 justify-center sm:justify-end">
+                        <span id="final-power">0.00</span>
+                        <span class="text-lg text-nature-900">kW</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inputs
+            const inputs = {
+                p1: document.getElementById('p1'),
+                p2: document.getElementById('p2'),
+                c1: document.getElementById('c1'),
+                a1: document.getElementById('a1'),
+                h1: document.getElementById('h1'),
+                c2: document.getElementById('c2'),
+                a2: document.getElementById('a2'),
+                h2: document.getElementById('h2'),
+                b: document.getElementById('bridge-width'), // in cm
+                t: document.getElementById('time')
+            };
+
+            // Outputs
+            const outputs = {
+                h: document.getElementById('result-h'),
+                area: document.getElementById('result-area'),
+                velocity: document.getElementById('result-velocity'),
+                power: document.getElementById('final-power'),
+                eqH: document.getElementById('eq-part-h'),
+                eqV: document.getElementById('eq-part-v'),
+                eqS: document.getElementById('eq-part-s'),
+                eqResult: document.getElementById('eq-result')
+            };
+
+            // UI State Elements
+            const footer = {
+                main: document.getElementById('main-footer'),
+                missing: document.getElementById('footer-missing'),
+                complete: document.getElementById('footer-complete'),
+                badges: {
+                    1: document.getElementById('missing-badge-1'),
+                    2: document.getElementById('missing-badge-2'),
+                    3: document.getElementById('missing-badge-3')
+                }
+            };
+
+            const checks = {
+                1: document.getElementById('check-step-1'),
+                2: document.getElementById('check-step-2'),
+                3: document.getElementById('check-step-3')
+            }
+
+            // Viz Elements
+            const viz = {
+                elGround: document.getElementById('viz-el-ground'),
+                elWater: document.getElementById('viz-el-water'),
+                elLine: document.getElementById('viz-el-line'),
+                elText: document.getElementById('viz-el-text'),
+                poly1: document.getElementById('poly1'),
+                poly2: document.getElementById('poly2'),
+                bridgeRect: document.getElementById('viz-bridge-rect'),
+                bridgeDimLine: document.getElementById('viz-bridge-dim-line'),
+                bridgeText: document.getElementById('viz-bridge-text'),
+                pooh: document.getElementById('viz-pooh'),
+            }
+
+            let poohAnimationId = null;
+
+            function getVal(el) {
+                const val = parseFloat(el.value);
+                return isNaN(val) ? 0 : val;
+            }
+
+            function getPosVal(el) {
+                const val = parseFloat(el.value);
+                return isNaN(val) ? 0 : Math.max(0, val);
+            }
+
+            // Helper: Check if inputs in a group are filled
+            function isGroupFilled(groupInputs) {
+                return groupInputs.every(input => input.value.trim() !== '');
+            }
+
+            function updateElevationViz(p1, p2, h) {
+                const startY = 40;
+                const runX = 120; 
+                const slopeX = 60; 
+                const totalX = 300;
+                
+                const maxVisualDrop = 60;
+                const visualDrop = Math.min(Math.max(h * 5, 0), maxVisualDrop);
+                const endY = startY + visualDrop;
+
+                const groundD = `M0,${startY} L${runX},${startY} L${runX + slopeX},${endY} L${totalX},${endY} L${totalX},120 L0,120 Z`;
+                const waterD = `M0,${startY-5} L${runX+5},${startY-5} L${runX + slopeX + 5},${endY-5} L${totalX},${endY-5} L${totalX},${endY} L${runX+slopeX},${endY} L${runX},${startY} L0,${startY} Z`;
+                
+                viz.elGround.setAttribute('d', groundD);
+                viz.elWater.setAttribute('d', waterD);
+
+                const lineX = runX + slopeX / 2;
+                viz.elLine.setAttribute('x1', lineX);
+                viz.elLine.setAttribute('x2', lineX);
+                viz.elLine.setAttribute('y1', startY);
+                viz.elLine.setAttribute('y2', endY);
+                viz.elText.setAttribute('x', lineX + 10);
+                viz.elText.setAttribute('y', startY + (endY - startY) / 2 + 5);
+                viz.elText.setAttribute('y', startY + (endY - startY) / 2 + 5);
+                viz.elText.textContent = `h = ${h.toFixed(1)}m`;
+            }
+
+            function updateTrapezoid(poly, c, a, h) {
+                const scale = 20; 
+                const c_px = Math.min(c * scale, 180);
+                const a_px = Math.min(a * scale, 180);
+                const h_px = Math.min(h * scale, 90);
+
+                const x_top_left = 100 - (c_px / 2);
+                const x_top_right = 100 + (c_px / 2);
+                const x_bot_left = 100 - (a_px / 2);
+                const x_bot_right = 100 + (a_px / 2);
+                
+                const y_top = 20;
+                const y_bot = 20 + h_px;
+
+                if (h <= 0) {
+                     poly.setAttribute('points', `0,20 200,20 200,20 0,20`);
+                } else {
+                    poly.setAttribute('points', `${x_bot_left},${y_bot} ${x_bot_right},${y_bot} ${x_top_right},${y_top} ${x_top_left},${y_top}`);
+                }
+            }
+
+            function updateVelocityViz(b, t) {
+                const scale = 0.3; 
+                const widthPx = Math.min(Math.max(b * scale, 20), 300);
+                const center = 200;
+                const startX = center - (widthPx / 2);
+                
+                viz.bridgeRect.setAttribute('x', startX);
+                viz.bridgeRect.setAttribute('width', widthPx);
+                
+                viz.bridgeDimLine.setAttribute('x1', startX);
+                viz.bridgeDimLine.setAttribute('x2', startX + widthPx);
+                viz.bridgeText.textContent = `B = ${b} cm`;
+
+                if (poohAnimationId) cancelAnimationFrame(poohAnimationId);
+                
+                if (t > 0 && b > 0) {
+                    viz.pooh.setAttribute('opacity', 1);
+                    const startTime = performance.now();
+                    const durationMs = t * 1000;
+                    const pathStart = startX - 20; 
+                    const pathEnd = startX + widthPx + 20; 
+                    const totalDist = pathEnd - pathStart;
+
+                    function animate(currentTime) {
+                        const elapsed = currentTime - startTime;
+                        const progress = (elapsed % durationMs) / durationMs;
+                        const currentX = pathStart + (progress * totalDist);
+                        viz.pooh.setAttribute('cx', currentX);
+                        poohAnimationId = requestAnimationFrame(animate);
+                    }
+                    poohAnimationId = requestAnimationFrame(animate);
+                } else {
+                    viz.pooh.setAttribute('opacity', 0);
+                }
+            }
+
+            function calculate() {
+                // Get Values
+                const p1 = getVal(inputs.p1);
+                const p2 = getVal(inputs.p2);
+                const h = Math.max(0, p1 - p2);
+
+                const c1 = getPosVal(inputs.c1);
+                const a1 = getPosVal(inputs.a1);
+                const h1 = getPosVal(inputs.h1);
+                const c2 = getPosVal(inputs.c2);
+                const a2 = getPosVal(inputs.a2);
+                const h2 = getPosVal(inputs.h2);
+
+                const avgAreaRaw = ((a1 + c1) * h1 + (a2 + c2) * h2);
+                const avgArea = 0.25 * avgAreaRaw;
+
+                const b_cm = getPosVal(inputs.b);
+                const t = getPosVal(inputs.t);
+                let v = 0;
+                if (t > 0) {
+                    v = (b_cm / 100) / t;
+                }
+
+                // Visual Updates
+                updateElevationViz(p1, p2, h);
+                updateTrapezoid(viz.poly1, c1, a1, h1);
+                updateTrapezoid(viz.poly2, c2, a2, h2);
+                updateVelocityViz(b_cm, t);
+
+                // Intermediate Text Updates
+                outputs.h.textContent = h.toFixed(2) + " m";
+                outputs.area.textContent = avgArea.toFixed(2) + " m²";
+                outputs.velocity.textContent = v.toFixed(2) + " m/s";
+
+                // Equation Part Updates
+                outputs.eqH.textContent = h.toFixed(2);
+                outputs.eqV.textContent = v.toFixed(2);
+                // For area part, the formula shows the 0.25 * (Sum of terms) = Average Area * 1 (basically)
+                // The formula breakdown in the prompt is 0.25 * (Terms). 
+                // So let's display the result of that entire block (which is Average Area).
+                outputs.eqS.textContent = avgArea.toFixed(2);
+
+                // Validation Status
+                const step1Filled = isGroupFilled([inputs.p1, inputs.p2]);
+                const step2Filled = isGroupFilled([inputs.c1, inputs.a1, inputs.h1, inputs.c2, inputs.a2, inputs.h2]);
+                const step3Filled = isGroupFilled([inputs.b, inputs.t]);
+                const allFilled = step1Filled && step2Filled && step3Filled;
+
+                // Toggle Validation Icons
+                checks[1].style.opacity = step1Filled ? 1 : 0;
+                checks[2].style.opacity = step2Filled ? 1 : 0;
+                checks[3].style.opacity = step3Filled ? 1 : 0;
+
+                // Calculate Final Power
+                const efficiency = 0.69;
+                const density = 1000;
+                const g = 9.81;
+                const powerWatts = efficiency * density * g * h * v * avgArea;
+                const powerKW = powerWatts / 1000;
+
+                outputs.eqResult.textContent = powerKW.toFixed(2);
+
+                // Footer Logic
+                if (allFilled) {
+                    footer.missing.classList.add('hidden');
+                    footer.complete.classList.remove('hidden');
+                    footer.main.classList.remove('bg-slate-100');
+                    footer.main.classList.add('bg-nature-50');
+
+                    outputs.power.textContent = powerKW.toFixed(2);
+                } else {
+                    footer.missing.classList.remove('hidden');
+                    footer.complete.classList.add('hidden');
+                    footer.main.classList.add('bg-slate-100');
+                    footer.main.classList.remove('bg-nature-50');
+                    
+                    // Update Badges styles
+                    const activeBadgeClass = "bg-red-100 text-red-600";
+                    const inactiveBadgeClass = "bg-slate-200 text-slate-400";
+                    const doneBadgeClass = "bg-green-100 text-green-600 line-through opacity-50";
+
+                    footer.badges[1].className = `px-2 py-1 rounded transition-colors ${step1Filled ? doneBadgeClass : activeBadgeClass}`;
+                    footer.badges[2].className = `px-2 py-1 rounded transition-colors ${step2Filled ? doneBadgeClass : activeBadgeClass}`;
+                    footer.badges[3].className = `px-2 py-1 rounded transition-colors ${step3Filled ? doneBadgeClass : activeBadgeClass}`;
+                }
+            }
+
+            // Attach listeners
+            Object.values(inputs).forEach(input => {
+                input.addEventListener('input', calculate);
+            });
+            
+            // Initial call
+            calculate();
+        });
+    </script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
